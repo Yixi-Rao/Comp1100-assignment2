@@ -30,14 +30,14 @@ handleEvent event m@(Model ss t c z s) =
         -- halve the pixel resolution
       | k == "=" || k == "." -> Model ss t c (z * 2.0) s
         -- double the pixel resolution
+      | k == "T" -> maybe m (\t' -> Model ss t' c z s) (switchTool t)
+      | k == "C" -> Model ss t (switchColour c) z s
       | k == " " ->
         case t of
           PolygonTool [] -> m
           PolygonTool ps ->
             Model ((c, Polygon ps) : (drop 1 ss)) (PolygonTool []) c z s
           _ -> m
-      | k == "T" -> maybe m (\t' -> Model ss t' c z s) (switchTool t)
-      | k == "C" -> Model ss t (switchColour c) z s
       | otherwise -> m
       where k = unpack key
     PointerPress p ->
