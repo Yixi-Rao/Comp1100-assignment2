@@ -35,9 +35,9 @@ pointToCoord z (x, y) = (x', y')
 
 -- | The 'updateView' function produces a rasterised picture from the model.
 updateView :: Model -> Picture
-updateView (Model ss t c z s) =
+updateView (Model ss t c z) =
   translated 0 8 toolText & translated 0 7 colourText &
-  (colourShapesToPicture z s ss) &
+  (colourShapesToPicture z ss) &
   coordinatePlane
   where
     colourText = stringToText (show c)
@@ -60,12 +60,12 @@ rasterToPicture (RGBA r g b _) z ps = pictures (map pixelToPicture ps)
         p = coloured (RGBA r g b a) (solidRectangle z z)
         (x', y') = coordToPoint z (x, y)
 
-colourShapesToPicture :: Resolution -> Smooth -> [ColourShape] -> Picture
-colourShapesToPicture z s = foldr ((&) . (colourShapeToPicture z s)) blank
+colourShapesToPicture :: Resolution -> [ColourShape] -> Picture
+colourShapesToPicture z = foldr ((&) . (colourShapeToPicture z)) blank
 
-colourShapeToPicture :: Resolution -> Smooth -> ColourShape -> Picture
-colourShapeToPicture z s (c, shape) =
-  rasterToPicture (colourNameToColour c) z (shapeToRaster z s shape)
+colourShapeToPicture :: Resolution  -> ColourShape -> Picture
+colourShapeToPicture z (c, shape) =
+  rasterToPicture (colourNameToColour c) z (shapeToRaster z shape)
 
 colourNameToColour :: ColourName -> Colour
 colourNameToColour c =
@@ -78,10 +78,10 @@ colourNameToColour c =
     Blue -> blue
     Violet -> violet
 
--- | The 'shapeToRaster' function produces a raster for a shape at the given resolution (optionally smoothed).
--- It takes three arguments: a resolution, whether to smooth, and the shape.
-shapeToRaster :: Resolution -> Smooth -> Shape -> Raster
-shapeToRaster z False shape =
+-- | The 'shapeToRaster' function produces a raster for a shape at the given resolution.
+-- It takes two arguments: a resolution and the shape.
+shapeToRaster :: Resolution -> Shape -> Raster
+shapeToRaster z shape =
   case shape of
     Point p -> point (pointToCoord z p)
     Rectangle (x, y) w h -> rectangle (pointToCoord z a) (pointToCoord z b)
@@ -92,7 +92,6 @@ shapeToRaster z False shape =
     Ellipse c w h ->
       ellipse (pointToCoord z c) (round $ w / (2 * z)) (round $ h / (2 * z))
     Polygon ps -> polygon $ map (pointToCoord z) ps
-shapeToRaster _ True _ = []
 
 -- | The 'point' function produces a raster for a point.
 -- Its argument is the raster coordinate of the point.

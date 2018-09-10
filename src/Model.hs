@@ -50,8 +50,7 @@ data Model =
         Tool
         ColourName
         Resolution
-        Smooth
   deriving (Show)
 
 initialModel :: Model
-initialModel = Model [] (PointTool Nothing) Black 1 False
+initialModel = Model [] (PointTool Nothing) Black 1

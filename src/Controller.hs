@@ -11,46 +11,44 @@ handleTime :: Double -> Model -> Model
 handleTime = flip const
 
 handleEvent :: Event -> Model -> Model
-handleEvent event m@(Model ss t c z s) =
+handleEvent event m@(Model ss t c z) =
   case event of
     KeyPress key
       | k == "Esc" -> initialModel
         -- revert to an empty canvas
       | k == "D" -> trace (pack (show m)) m
         --   the current model on the console
-      | k == "Backspace" || k == "Delete" -> Model (drop 1 ss) t c z s
+      | k == "Backspace" || k == "Delete" -> Model (drop 1 ss) t c z
         -- drop the last added shape
-      | k == "S" -> Model ss t c z (not s)
-        -- turn smoothing on/off
-      | k == "0" -> Model ss t c (1 / 10) s
+      | k == "0" -> Model ss t c (1 / 10)
         -- set the pixel resolution to 0.1
-      | isDigit . head $ k -> Model ss t c (1 / read [head k]) s
+      | isDigit . head $ k -> Model ss t c (1 / read [head k])
         -- set the pixel resolution to 1/k
-      | k == "-" || k == "," -> Model ss t c (z / 2.0) s
+      | k == "-" || k == "," -> Model ss t c (z / 2.0)
         -- halve the pixel resolution
-      | k == "=" || k == "." -> Model ss t c (z * 2.0) s
+      | k == "=" || k == "." -> Model ss t c (z * 2.0)
         -- double the pixel resolution
-      | k == "T" -> maybe m (\t' -> Model ss t' c z s) (switchTool t)
-      | k == "C" -> Model ss t (switchColour c) z s
+      | k == "T" -> maybe m (\t' -> Model ss t' c z) (switchTool t)
+      | k == "C" -> Model ss t (switchColour c) z
       | k == " " ->
         case t of
           PolygonTool [] -> m
           PolygonTool ps ->
-            Model ((c, Polygon ps) : (drop 1 ss)) (PolygonTool []) c z s
+            Model ((c, Polygon ps) : (drop 1 ss)) (PolygonTool []) c z
           _ -> m
       | otherwise -> m
       where k = unpack key
     PointerPress p ->
-      maybe m (\(s', t') -> Model ((c, s') : ss) t' c z s) (useTool t p)
+      maybe m (\(s', t') -> Model ((c, s') : ss) t' c z) (useTool t p)
     PointerMovement p ->
       maybe
         m
-        (\(s', t') -> Model ((c, s') : (drop 1 ss)) t' c z s)
+        (\(s', t') -> Model ((c, s') : (drop 1 ss)) t' c z)
         (moveTool t p)
     PointerRelease p ->
       maybe
         m
-        (\(s', t') -> Model ((c, s') : (drop 1 ss)) t' c z s)
+        (\(s', t') -> Model ((c, s') : (drop 1 ss)) t' c z)
         (applyTool t p)
     _ -> m
 
