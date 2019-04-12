@@ -19,13 +19,21 @@ data TurtleCommand
 -- Task 1: Drawing Shapes
 
 triangle :: Double -> [TurtleCommand]
-triangle = undefined -- TODO
+triangle length =[Turn (-pi/6), PenDown ,Forward length ,Turn ((-2/3)*pi) ,Forward length ,Turn ((-2/3)*pi) ,Forward length ,Turn (-pi/2)]
+      -- TODO
 
 polygon :: Int -> Double -> [TurtleCommand]
-polygon = undefined -- TODO
-
-
+polygon int length
+      |int <= 2 = error "It just has 2 lengths ,which can not build a polygon" -- TODO
+      |int == 3  = [PenDown,Turn (-(pi-polygonDegree)),Forward length,Turn (-(pi-polygonDegree)),Forward length ,Turn (-(pi-polygonDegree)) ,Forward length ,Turn (-(pi-polygonDegree)),PenUp]
+      |int > 3 = [PenDown,Turn (-(pi-polygonDegree)) ,Forward length ,PenUp]++(polygon (int-1) length)
+      where polygonDegree=(pi*(int-2))/int
 -- Task 2: Interpreting Turtle Commands
+data TurtleState
+  =Turtle Point Radians TurtleCommand
+  deriving (Eq, Show)
+
+type InitialState = TurtleState
 
 runTurtle :: [TurtleCommand] -> Picture
 runTurtle = undefined -- TODO
