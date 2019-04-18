@@ -1,6 +1,6 @@
 module Turtle where
 
-import CodeWorld
+import CodeWorld hiding (polygon)
 
 type Radians = Double
 
@@ -19,24 +19,49 @@ data TurtleCommand
 -- Task 1: Drawing Shapes
 
 triangle :: Double -> [TurtleCommand]
-triangle length =[Turn (-pi/6), PenDown ,Forward length ,Turn ((-2/3)*pi) ,Forward length ,Turn ((-2/3)*pi) ,Forward length ,Turn (-pi/2)]
+triangle l =[Turn ((-2/3)*pi), Forward l ,Turn ((-2/3)*pi) ,Forward l ,Turn ((-2/3)*pi) ,Forward l ]
       -- TODO
 
 polygon :: Int -> Double -> [TurtleCommand]
-polygon int length
-      |int <= 2 = error "It just has 2 lengths ,which can not build a polygon" -- TODO
-      |int == 3  = [PenDown,Turn (-(pi-polygonDegree)),Forward length,Turn (-(pi-polygonDegree)),Forward length ,Turn (-(pi-polygonDegree)) ,Forward length ,Turn (-(pi-polygonDegree)),PenUp]
-      |int > 3 = [PenDown,Turn (-(pi-polygonDegree)) ,Forward length ,PenUp]++(polygon (int-1) length)
-      where polygonDegree=(pi*(int-2))/int
+polygon n len
+     |n <= 2 = error "It just has 2 lengths ,which can not build a polygon" -- TODO
+     |n == 3 = [PenDown,Turn angle,Forward len,Turn angle,Forward len,Turn angle,Forward len,PenUp]
+     |n > 3 = [PenDown,Turn angle,Forward len,PenUp]++(polygon (n-1) len)
+     where angle= (2*pi)/(fromIntegral n)
 -- Task 2: Interpreting Turtle Commands
-data TurtleState
-  =Turtle Point Radians TurtleCommand
+data UqandDown =    MyPenUp | MyPenDown
   deriving (Eq, Show)
 
-type InitialState = TurtleState
+
+data TurtleState
+  =Turtle Point Radians TurtleCommand UqandDown
+  deriving (Eq, Show)
+
+initialState :: TurtleState
+initialState = Turtle (0,0) (pi/2) PenDown MyPenDown
 
 runTurtle :: [TurtleCommand] -> Picture
-runTurtle = undefined -- TODO
+runTurtle command= dontknow (firstdont command initialState)
+
+         -- TODO
+firstdont :: [TurtleCommand]-> TurtleState-> [TurtleState]
+firstdont l (Turtle (a,b) ir tc ud) = case l of
+            x:xs ->case x of
+                PenDown -> [Turtle (a,b) ir PenDown MyPenDown]++(firstdont xs (Turtle (a,b) ir tc MyPenDown))
+                PenUp -> [Turtle (a,b) ir PenUp MyPenUp] ++ (firstdont xs (Turtle (a,b) ir tc MyPenUp))
+                Forward d ->[Turtle (a,b) ir (Forward d) ud]++ (firstdont xs (Turtle ((a+d*(cos ir)),(b+d*(sin ir))) ir (Forward d) ud))
+                Turn r -> [Turtle (a,b) (r+ir) (Turn (r+ir)) ud] ++ (firstdont xs (Turtle (a,b) (r+ir) (Turn (r+ir)) ud))
+            _-> []
+
+dontknow :: [TurtleState] -> Picture
+dontknow list = case list of
+            x:xs -> case x of
+                Turtle (a,b) r (Forward d) ud->case ud of
+                    MyPenDown -> ( polyline [(a,b),((a+d*(cos r)),(b+d*(sin r)))])& (dontknow xs)
+                    MyPenUp -> ( polyline [((a+d*(cos r)),(b+d*(sin r))),((a+d*(cos r)),(b+d*(sin r)))])& (dontknow xs)
+                _ -> dontknow xs
+            [] -> coordinatePlane
+
 
 
 -- Task 3: Sierpinski's Triangle
