@@ -23,11 +23,15 @@ triangle l =[Turn ((-2/3)*pi), Forward l ,Turn ((-2/3)*pi) ,Forward l ,Turn ((-2
       -- TODO
 
 polygon :: Int -> Double -> [TurtleCommand]
-polygon n len
-     |n <= 2 = error "It just has 2 lengths ,which can not build a polygon" -- TODO
-     |n == 3 = [PenDown,Turn angle,Forward len,Turn angle,Forward len,Turn angle,Forward len,PenUp]
-     |n > 3 = [PenDown,Turn angle,Forward len,PenUp]++(polygon (n-1) len)
-     where angle= (2*pi)/(fromIntegral n)
+polygon n len = helpdegree n n len
+
+
+helpdegree:: Int -> Int -> Double -> [TurtleCommand]
+helpdegree d m s
+    |m == 3 = [PenDown,Turn angle,Forward s,Turn angle,Forward s,Turn angle,Forward s,PenUp]
+    |m > 3 = [PenDown,Turn angle,Forward s,PenUp]++(helpdegree d (m-1) s)
+    |otherwise = error "not a number"
+    where angle= (2*pi)/(fromIntegral d)
 -- Task 2: Interpreting Turtle Commands
 data UqandDown =    MyPenUp | MyPenDown
   deriving (Eq, Show)
