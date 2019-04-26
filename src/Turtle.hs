@@ -25,7 +25,6 @@ triangle l =[Turn ((-2/3)*pi), Forward l ,Turn ((-2/3)*pi) ,Forward l ,Turn ((-2
 polygon :: Int -> Double -> [TurtleCommand]
 polygon n len = helpdegree n n len
 
-
 helpdegree:: Int -> Int -> Double -> [TurtleCommand]
 helpdegree d m s
     |m == 3 = [PenDown,Turn angle,Forward s,Turn angle,Forward s,Turn angle,Forward s,PenUp]
@@ -73,8 +72,9 @@ dontknow list = case list of
 --   COMP1130: Implement this using an L-System (Task 3B)
 
 sierpinski :: Int -> Double -> [TurtleCommand]
-sierpinski = undefined -- TODO
-
+sierpinski n l
+    |n==1 = [PenDown,Turn 0,Forward l,Turn ((2*pi)/3),Forward l,Turn ((2*pi)/3),Forward l,Turn ((2*pi)/3)] -- TODO
+    |n > 1 = (sierpinski (n-1) l/(2**(n-1))) ++ [PenUp]
 
 -- Task 3B: L-Systems (COMP1130 Only)
 
