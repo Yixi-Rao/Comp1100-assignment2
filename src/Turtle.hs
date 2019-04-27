@@ -72,9 +72,18 @@ dontknow list = case list of
 --   COMP1130: Implement this using an L-System (Task 3B)
 
 sierpinski :: Int -> Double -> [TurtleCommand]
-sierpinski n l
-    |n==1 = [PenDown,Turn 0,Forward l,Turn ((2*pi)/3),Forward l,Turn ((2*pi)/3),Forward l,Turn ((2*pi)/3)] -- TODO
-    |n > 1 = (sierpinski (n-1) l/(2**(n-1))) ++ [PenUp]
+sierpinski n l = draw n n l
+
+
+
+draw:: Int ->Int-> Double -> [TurtleCommand]
+draw n k l
+   | n == 1 = [Forward len,Turn (pi*2/3),Forward len,Turn (pi*2/3),Forward len,Turn (pi*2/3)]
+
+   | otherwise = draw (n-1) k l++[Forward move]++draw (n-1) k l++[Turn (pi*2/3),Forward move,Turn (-pi*2/3)]++draw (n-1) k l++[Turn (-pi*2/3),Forward move ,Turn (pi*2/3)]
+    where len = l/(2**(fromIntegral (k-1)))
+          move = l/(2**(fromIntegral (k-(n-1))))
+
 
 -- Task 3B: L-Systems (COMP1130 Only)
 
