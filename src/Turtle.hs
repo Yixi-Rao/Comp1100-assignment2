@@ -17,53 +17,71 @@ data TurtleCommand
   deriving (Eq, Show)
 
 -- Task 1: Drawing Shapes
-
+-- | It is a list of turtle commands , which will draw a triangle
 triangle :: Double -> [TurtleCommand]
 triangle l =[Turn ((-2/3)*pi), Forward l ,Turn ((-2/3)*pi) ,Forward l ,Turn ((-2/3)*pi) ,Forward l ]
       -- TODO
-
+-- | It will generate a list of turtle commands , which will draw a polygon with n sides and len length
 polygon :: Int -> Double -> [TurtleCommand]
-polygon n len = helpdegree n n len
+polygon n len = helpPolygon n n len
 
-helpdegree:: Int -> Int -> Double -> [TurtleCommand]
-helpdegree d m s
+-- | is a function , which will help to build a polygon with an another n sides input as to help to define the angle
+helpPolygon:: Int -> Int -> Double -> [TurtleCommand]
+helpPolygon d m s
     |m == 3 = [PenDown,Turn angle,Forward s,Turn angle,Forward s,Turn angle,Forward s,PenUp]
-    |m > 3 = [PenDown,Turn angle,Forward s,PenUp]++(helpdegree d (m-1) s)
-    |otherwise = error "not a number"
+    |otherwise = [PenDown,Turn angle,Forward s,PenUp]++(helpPolygon d (m-1) s)
+
     where angle= (2*pi)/(fromIntegral d)
+
 -- Task 2: Interpreting Turtle Commands
-data UqandDown =    MyPenUp | MyPenDown
+
+-- | Pen is up or down
+data UqandDown
+  = MyPenUp -- ^ Pen is up , which will move to a new point without drawing anything
+  | MyPenDown -- ^ Pen is down and draw a new line according to two points
   deriving (Eq, Show)
 
-
+-- | All The information about the turtle
 data TurtleState
-  =Turtle Point Radians TurtleCommand UqandDown
+  =Turtle Point Radians TurtleCommand UqandDown -- ^ the facing and position and the command that will performed
+                                                    -- or not according to the pen is up or down
   deriving (Eq, Show)
 
+-- | the initial state of the turtle
 initialState :: TurtleState
 initialState = Turtle (0,0) (pi/2) PenDown MyPenDown
 
+-- | run all commands and draw a picture
 runTurtle :: [TurtleCommand] -> Picture
-runTurtle command= dontknow (firstdont command initialState)
+runTurtle command= stateToPic (comToState command initialState)
 
          -- TODO
-firstdont :: [TurtleCommand]-> TurtleState-> [TurtleState]
-firstdont l (Turtle (a,b) ir tc ud) = case l of
+
+-- | Transform the commands to the list of TurtleStates
+comToState :: [TurtleCommand]-> TurtleState-> [TurtleState]
+comToState l (Turtle (a,b) ir tc ud) = case l of
             x:xs ->case x of
-                PenDown -> [Turtle (a,b) ir PenDown MyPenDown]++(firstdont xs (Turtle (a,b) ir tc MyPenDown))
-                PenUp -> [Turtle (a,b) ir PenUp MyPenUp] ++ (firstdont xs (Turtle (a,b) ir tc MyPenUp))
-                Forward d ->[Turtle (a,b) ir (Forward d) ud]++ (firstdont xs (Turtle ((a+d*(cos ir)),(b+d*(sin ir))) ir (Forward d) ud))
-                Turn r -> [Turtle (a,b) (r+ir) (Turn (r+ir)) ud] ++ (firstdont xs (Turtle (a,b) (r+ir) (Turn (r+ir)) ud))
+                PenDown -> [Turtle (a,b) ir PenDown MyPenDown]++(comToState xs (Turtle (a,b) ir tc MyPenDown))
+                PenUp -> [Turtle (a,b) ir PenUp MyPenUp] ++ (comToState xs (Turtle (a,b) ir tc MyPenUp))
+                Forward d ->[Turtle (a,b) ir (Forward d) ud]++ (comToState xs (Turtle (newX,newY) ir (Forward d) ud))
+                    where newX = (a+d*(cos ir))
+                          newY = (b+d*(sin ir))
+                Turn r -> [Turtle (a,b) (r+ir) (Turn (r+ir)) ud] ++ (comToState xs (Turtle (a,b) (r+ir) (Turn (r+ir)) ud))
             _-> []
 
-dontknow :: [TurtleState] -> Picture
-dontknow list = case list of
+-- | This function turns all the states to picture according to the pen's situation
+stateToPic :: [TurtleState] -> Picture
+stateToPic list = case list of
+            [] -> coordinatePlane
             x:xs -> case x of
                 Turtle (a,b) r (Forward d) ud->case ud of
-                    MyPenDown -> ( polyline [(a,b),((a+d*(cos r)),(b+d*(sin r)))])& (dontknow xs)
-                    MyPenUp -> ( polyline [((a+d*(cos r)),(b+d*(sin r))),((a+d*(cos r)),(b+d*(sin r)))])& (dontknow xs)
-                _ -> dontknow xs
-            [] -> coordinatePlane
+                    MyPenDown -> ( polyline [(a,b),(newX,newY)])& (stateToPic xs)
+                    MyPenUp -> ( polyline [(newX,newY),(newX,newY)])& (stateToPic xs)
+                    where newX = (a+d*(cos r))
+                          newY = (b+d*(sin r))
+                _ -> stateToPic xs
+
+
 
 
 
@@ -71,20 +89,20 @@ dontknow list = case list of
 --   COMP1100: Implement this directly (Task 3A)
 --   COMP1130: Implement this using an L-System (Task 3B)
 
+-- |
 sierpinski :: Int -> Double -> [TurtleCommand]
 sierpinski n l = draw n n l
-
 
 
 draw:: Int ->Int-> Double -> [TurtleCommand]
 draw n k l
    | n == 1 = [Forward len,Turn (pi*2/3),Forward len,Turn (pi*2/3),Forward len,Turn (pi*2/3)]
-
-   | otherwise = draw (n-1) k l++[Forward move]++draw (n-1) k l++[Turn (pi*2/3),Forward move,Turn (-pi*2/3)]++draw (n-1) k l++[Turn (-pi*2/3),Forward move ,Turn (pi*2/3)]
-    where len = l/(2**(fromIntegral (k-1)))
-          move = l/(2**(fromIntegral (k-(n-1))))
-
-
+   | otherwise = draw (n-1) k l ++ [f] ++ draw (n-1) k l ++ [tp ,f,tn] ++ draw (n-1) k l ++ [tn,f ,tp]
+    where len = l / (2 ** (fromIntegral (k-1)))
+          move = l / (2 ** (fromIntegral (k-(n-1))))
+          tp = Turn (pi*2/3)
+          tn = Turn (-pi*2/3)
+          f = Forward move
 -- Task 3B: L-Systems (COMP1130 Only)
 
 lSystemCommands :: [TurtleCommand]
