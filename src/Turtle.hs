@@ -30,7 +30,7 @@ data TurtleCommand
 -- | It is a list of turtle commands , which will draw a triangle
 triangle :: Double -> [TurtleCommand]
 triangle l =[Turn ((-2/3)*pi), Forward l ,Turn ((-2/3)*pi) ,Forward l ,Turn ((-2/3)*pi) ,Forward l ]
-      -- TODO
+
 -- | It will generate a list of turtle commands , which will draw a polygon with n sides and len length
 polygon :: Int -> Double -> [TurtleCommand]
 polygon n len = helpPolygon n n len
@@ -113,7 +113,7 @@ draw n k l
 -- Task 3B: L-Systems (COMP1130 Only)
 
 lSystemCommands :: [TurtleCommand]
-lSystemCommands = undefined -- TODO
+lSystemCommands = undefined
 
 
 
@@ -196,4 +196,9 @@ comp1100 = concat [start, c, o, m, p, one, one, o, o]
 
     -- Diagonal length of a right-angle triangle with both sides 0.5
     d = sqrt (2 * 0.5 * 0.5)
+
+
+
+
+
 
