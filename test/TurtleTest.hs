@@ -49,6 +49,7 @@ testOnTriangle = Test label (assertApproxEqual (turtleDistance (triangle 5)) 15.
 testOnStateToPic :: Test
 testOnStateToPic = Test label (assertApproxEqual (penDownToDraw (comToState comp1100 initialState)) (actual))
         where label = "The total distance of the turtle draws comp1100 when pen is down "
+              -- actual is the actual distance and it must be correct
               actual = turtleDistancePenDown comp1100
 
 -- | You might find it easier to write tests against entire 'Point's.
@@ -65,6 +66,8 @@ testOnComToState = Test "decago driving out and back leaves you in the same posi
 testOnSierpinski :: Test
 testOnSierpinski = Test str ((assertEqual (totalTriangle (sierpinski 10 10))) (19683))
         where str = "The total amount of smallest equilateral triangle in Sierpinski's Triangle with depth 10"
+
+-- helper function part
 
 -- | This function find the last point of the turtle will stay
 lastPoint :: [TurtleState] -> (Double,Double)
@@ -104,30 +107,31 @@ penDownToDraw ts = case ts of
                   newY = (b+d*(sin r))
     _ : xs -> penDownToDraw xs
 
+-- | TurtleCommand with label pen up or down
 data CommandUpOrDown
-  = Up TurtleCommand -- ^
-  | Down TurtleCommand -- ^
+  = Up TurtleCommand -- ^ Pen is up,and will not perform TurtleCommand
+  | Down TurtleCommand -- ^ Pen is down, and will perform TurtleCommand
   deriving (Eq, Show)
 
-
+-- | This function will draw the actual picture when pen is down
 turtleDistancePenDown :: [TurtleCommand] -> Double
-turtleDistancePenDown tc = sumComp (helper tc (Up PenUp))
+turtleDistancePenDown tc = sumPenDown (comToComUpOrDown tc (Up PenUp))
 
-
-helper :: [TurtleCommand] -> CommandUpOrDown -> [CommandUpOrDown]
-helper tc cuod = case (cuod , tc) of
+-- | A helper function, transform the TurtleCommand to CommandUpOrDown
+comToComUpOrDown :: [TurtleCommand] -> CommandUpOrDown -> [CommandUpOrDown]
+comToComUpOrDown tc cuod = case (cuod , tc) of
     (_ , []) -> []
-    (Up _ ,PenDown:xs)  -> [Down PenDown] ++ helper xs (Down PenDown)
-    (Up _ ,x:xs) -> helper xs (Up x)
-    (Down _,PenUp:xs) ->  helper xs (Up PenUp)
-    (Down _,x:xs) -> [Down x] ++ helper xs (Down x)
+    (Up _ ,PenDown:xs)  -> [Down PenDown] ++ comToComUpOrDown xs (Down PenDown)
+    (Up _ ,x:xs) -> comToComUpOrDown xs (Up x)
+    (Down _,PenUp:xs) ->  comToComUpOrDown xs (Up PenUp)
+    (Down _,x:xs) -> [Down x] ++ comToComUpOrDown xs (Down x)
 
-
-sumComp :: [CommandUpOrDown] -> Double
-sumComp cl = case cl of
+-- | This function is designed to test stateToPic function ,namely,whether polyline is draw the right picture
+sumPenDown :: [CommandUpOrDown] -> Double
+sumPenDown cl = case cl of
     [] -> 0
-    Down (Forward d):xs -> d + sumComp xs
-    _ :xs -> sumComp xs
+    Down (Forward d):xs -> d + sumPenDown xs
+    _ :xs -> sumPenDown xs
 
 
 -- | A haskell program starts by running the computation defined by
