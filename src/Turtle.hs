@@ -53,7 +53,7 @@ data UqandDown
 -- | All The information about the turtle
 data TurtleState
   =Turtle Point Radians TurtleCommand UqandDown -- ^ the facing and position and the command that will performed
-                                                    -- or not according to the pen is up or down
+                                                -- or not according to the pen is up or down
   deriving (Eq, Show)
 
 -- | the initial state of the turtle
@@ -101,7 +101,7 @@ sierpinski :: Int -> Double -> [TurtleCommand]
 sierpinski n l = draw n n l
 
 -- | This helper function will generate a list, which will draw the sierpinski triangle
-draw:: Int ->Int-> Double -> [TurtleCommand]
+draw:: Int -> Int -> Double -> [TurtleCommand]
 draw n k l
     | n == 1 = [Forward len,Turn (pi*2/3),Forward len,Turn (pi*2/3),Forward len,Turn (pi*2/3)]
     | otherwise = draw (n-1) k l ++ [f] ++ draw (n-1) k l ++ [tp ,f,tn] ++ draw (n-1) k l ++ [tn ,f ,tp]
